@@ -8,15 +8,15 @@ class User:
         self.username = username
         self.password = password
 
-    @classmethod
     # The class methods are bound to the class definition rather than its object.
     # Though classmethod and staticmethod are quite similar, there's a slight difference
     # in usage for both entities: classmethod must have a reference to a class object as the
     # first parameter (cls), whereas staticmethod can have no parameters at all.
+    @classmethod
     def find_by_username(cls, username):
          # Instead of using self in the parameters of the method, we use 'cls' since it is.
          # a classmethod.
-        connection = sqlite3.connect('users.db')
+        connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
         query = "SELECT * FROM users WHERE username=?"
         result = cursor.execute(query, (username,))
@@ -37,7 +37,7 @@ class User:
     def find_by_id(cls, _id):
         # Instead of using self in the parameters of the method, we use 'cls' since it is.
         # a classmethod.
-        connection = sqlite3.connect('users.db')
+        connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
         query = "SELECT * FROM users WHERE id=?"
         result = cursor.execute(query, (_id,))
@@ -73,7 +73,10 @@ class UserRegister(Resource):
     def post(self):
         data = UserRegister.parser.parse_args() # This is to get username and password from the POST request made in Postman
 
-        connection = sqlite3.connect('users.db')
+        if User.find_by_username(data['username']) is not None:
+            return {"message": "A user with that username already exists"}, 400
+
+        connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
 
         query = "INSERT INTO users VALUES(NULL, ?, ?)"
